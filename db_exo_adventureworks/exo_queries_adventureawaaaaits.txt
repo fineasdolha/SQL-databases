@@ -1,0 +1,124 @@
+1. Afficher la liste des personnes (nom, prénom, poste) qui sont des employés de l’entreprise
+AdventureWorks
+
+SELECT Person.FirstName, Person.LastName from Person.Person;
+
+2. Afficher la liste des employés (nom, prénom, service dans lequel ils se trouvent et depuis quelle
+date ils s’y trouvent) 
+
+ SELECT Person.FirstName, Person.LastName, Employee.JobTitle, Employee.HireDate from Person.Person JOIN HumanResources.Employee on Person.BusinessEntityID = Employee.BusinessEntityID;
+
+3. Afficher la liste des personnes (nom, prénom, numéro de téléphone) disposant d’un numéro
+de téléphone cellulaire
+
+ SELECT Person.FirstName, Person.LastName, Department.Name, Employee.HireDate from Person.Person 
+								JOIN HumanResources.Employee on Person.BusinessEntityID = Employee.BusinessEntityID
+								JOIN HumanResources.EmployeeDepartmentHistory on Employee.BusinessEntityID = EmployeeDepartmentHistory.BusinessEntityID
+								JOIN HumanResources.Department on EmployeeDepartmentHistory.DepartmentID = Department.DepartmentID;
+4. Afficher la liste des personnes (nom, prénom, numéro de téléphone) disposant d’un numéro
+de téléphone professionnel
+
+ SELECT Person.FirstName, Person.LastName, PersonPhone.PhoneNumber, PhoneNUmberType.Name 
+from Person.Person 
+JOIN Person.PersonPhone on Person.BusinessEntityID = PersonPhone.BusinessEntityID
+JOIN Person.PhoneNumberType on PersonPhone.PhoneNumberTypeID = PhoneNumberType.PhoneNumberTypeID
+WHERE PhoneNumberType.PhoneNumberTypeID = 3;	
+
+5.Afficher la liste des personnes avec leurs numéros de téléphone respectifs qu’ils soient
+professionnels ou personnels (nom, prénom, numéro)
+
+ SELECT Person.FirstName, Person.LastName, PersonPhone.PhoneNumber, PhoneNUmberType.Name from Person.Person 
+JOIN Person.PersonPhone on Person.BusinessEntityID = PersonPhone.BusinessEntityID
+JOIN Person.PhoneNumberType on PersonPhone.PhoneNumberTypeID = PhoneNumberType.PhoneNumberTypeID;
+
+6. Afficher la liste des personnes (nom, prénom, adresse) disposant d’une adresse de domicile	
+
+ SELECT Person.FirstName, Person.LastName, Address.AddressLine1, Address.AddressLine2, AddressType.Name from Person.Person
+JOIN Person.BusinessEntityAddress on Person.BusinessEntityID = BusinessEntityAddress.BusinessEntityID
+JOIN Person.Address on BusinessEntityAddress.AddressID = Address.AddressID
+JOIN Person.AddressType on BusinessEntityAddress.AddressTypeID = AddressType.AddressTypeID
+Where AddressType.AddressTypeID= 2;
+
+7. Afficher la liste des personnes (nom, prénom, adresse) disposant d’une adresse de bureau
+(main office)
+
+SELECT person.firstname, person.LastName , AddressType.Name, addresstype.addresstypeid from Person.AddressType join Person.Person ON AddressType.AddressTypeID = 3;
+
+8. Afficher la liste des personnes (nom, prénom, emails) disposant de plusieurs adresses email
+(au minimum 2)
+
+SELECT Person.Person.FirstName, Person.Person.LastName, STRING_AGG(EmailAddress.EmailAddress,',') FROM Person.Person 
+LEFT JOIN Person.EmailAddress ON Person.BusinessEntityID = EmailAddress.BusinessEntityID 
+GROUP BY Person.Person.FirstName, Person.Person.LastName
+HAVING COUNT(EmailAddress.EmailAddress)>=2
+
+9. Afficher la liste des personnes (nom, prénom, numéro de compte) qui sont clientes de
+l’entreprise
+
+SELECT Person.Person.FirstName, Person.Person.LastName, Sales.Customer.AccountNumber, Sales.Customer.CustomerID, Sales.Customer.PersonID 
+		from person.person  
+		JOIN sales.customer on person.BusinessEntityID = sales.customer.PersonID
+		ORDER BY Sales.Customer.CustomerID  DESC;
+
+10. Afficher la liste des modèles de produits (nom, description) avec leur description en français
+
+SELECT ProductModel.Name, ProductDescription.Description FROM AdventureWorks2014.Production.ProductModel 
+JOIN AdventureWorks2014.Production.ProductModelProductDescriptionCulture ON ProductModel.ProductModelID = ProductModelProductDescriptionCulture.ProductModelID
+JOIN AdventureWorks2014.Production.ProductDescription ON  ProductModelProductDescriptionCulture.ProductDescriptionID = ProductDescription.ProductDescriptionID 
+WHERE ProductModelProductDescriptionCulture.CultureID = 'fr';
+
+11. Afficher la liste des commandes passées (numéro de commande, date de la commande) sur
+l’année 2014
+
+SELECT SalesOrderNumber, OrderDate FROM AdventureWorks2014.Sales.SalesOrderHeader where SalesOrderHeader.OrderDate between '2014/01/01' and '2014/12/31' order by OrderDate desc
+
+
+12. Afficher combien de ventes ont été réalisées par type de carte de crédit
+
+SELECT CardType, Count(*) as ' Nombre de ventes' FROM AdventureWorks2014.Sales.CreditCard JOIN AdventureWorks2014.Sales.SalesOrderHeader ON CreditCard.CreditCardID = SalesOrderHeader.CreditCardID GROUP BY CardType
+
+13. Afficher la quantité par produit qui ont été vendus
+
+SELECT Product.Name, SUM(OrderQty) FROM AdventureWorks2014.Sales.SalesOrderDetail JOIN AdventureWorks2014.Production.Product ON  SalesOrderDetail.ProductID = Product.ProductID GROUP BY Name;
+
+14. Afficher le montant total vendu par produit
+
+SELECT Product.Name, SUM(UnitPrice) FROM AdventureWorks2014.Sales.SalesOrderDetail JOIN AdventureWorks2014.Production.Product ON  SalesOrderDetail.ProductID = Product.ProductID GROUP BY Name;
+
+15. Afficher les produits (code produit, nom du produit, nom de la catégorie) par catégorie
+
+SELECT Product.ProductNumber, Product.Name as 'Nom du produit', ProductCategory.Name as 'Catégorie' FROM AdventureWorks2014.Production.Product 
+JOIN AdventureWorks2014.Production.ProductSubcategory ON Product.ProductSubcategoryID = ProductSubcategory.ProductSubcategoryID
+JOIN AdventureWorks2014.Production.ProductCategory ON ProductSubcategory.ProductCategoryID = ProductCategory.ProductCategoryID;
+
+
+16. Afficher le produit (nom) le plus vendu par l’entreprise
+
+SELECT TOP 1 Product.Name, SUM(OrderQty) as 'Quantity' FROM AdventureWorks2014.Sales.SalesOrderDetail 
+JOIN AdventureWorks2014.Production.Product ON  SalesOrderDetail.ProductID = Product.ProductID 
+GROUP BY Name ORDER BY SUM(OrderQty) DESC;
+
+
+17. Afficher le numéro de produit, le nom du produit, le nom du fichier photo de produit (large),
+la description en anglais, le nom de la sous-catégorie à laquelle le produit appartient et le
+nombre de produits commandés sur l’ensemble des commandes
+
+SELECT Product.ProductNumber, Product.Name, ProductDescription.Description , ProductPhoto.LargePhotoFileName, ProductSubcategory.Name, Count(SalesOrderDetail.OrderQty) 
+
+FROM AdventureWorks2014.Production.Product 
+JOIN AdventureWorks2014.Production.ProductSubcategory ON Product.ProductSubcategoryID = ProductSubcategory.ProductSubcategoryID
+JOIN AdventureWorks2014.Production.ProductProductPhoto ON Product.ProductID = ProductProductPhoto.ProductID
+JOIN AdventureWorks2014.Production.ProductPhoto ON ProductProductPhoto.ProductPhotoID = ProductPhoto.ProductPhotoID
+JOIN AdventureWorks2014.Sales.SalesOrderDetail ON SalesOrderDetail.ProductID = Product.ProductID
+JOIN AdventureWorks2014.Production.ProductModel ON Product.Name = ProductModel.Name
+JOIN AdventureWorks2014.Production.ProductModelProductDescriptionCulture ON ProductModel.ProductModelID = ProductModelProductDescriptionCulture.ProductModelID
+JOIN AdventureWorks2014.Production.ProductDescription ON ProductModelProductDescriptionCulture.ProductDescriptionID = ProductDescription.ProductDescriptionID
+WHERE ProductModelProductDescriptionCulture.CultureID = 'en'
+
+Group BY Product.Name,Product.ProductNumber, ProductPhoto.LargePhotoFileName, ProductSubcategory.Name, ProductDescription.Description;
+
+
+
+
+
+																
